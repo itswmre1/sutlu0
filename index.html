@@ -1,79 +1,174 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <title>Veri Kayıt Uygulaması</title>
+  <meta charset="UTF-8" />
+  <title>Sütlüzade Veri Kaydı</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 40px;
-      background: #f7f7f7;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #000; /* siyah arka plan */
+      color: #f9d71c; /* sarı yazı */
+      max-width: 600px;
+      margin: 30px auto;
+      padding: 20px;
+      border-radius: 10px;
+      box-sizing: border-box;
     }
-    input, button {
-      margin: 10px;
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    /* Logo yazısı */
+    .logo {
+      font-size: 48px;
+      font-weight: 900;
+      font-family: 'Brush Script MT', cursive;
+      color: #f9d71c;
+      text-shadow: 0 0 8px #f9d71c;
+      user-select: none;
+      margin-bottom: 10px;
+    }
+    label {
+      display: block;
+      margin: 15px 0 5px;
+      font-weight: 700;
+      color: #f9d71c;
+    }
+    input[type="number"],
+    input[type="date"] {
+      width: 100%;
       padding: 10px;
-      font-size: 16px;
+      font-size: 18px;
+      border-radius: 6px;
+      border: none;
+      outline: none;
+      box-sizing: border-box;
+      color: #000;
+    }
+    button {
+      margin-top: 25px;
+      width: 100%;
+      padding: 15px;
+      font-size: 20px;
+      font-weight: 700;
+      background-color: #f9d71c;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 0 12px #f9d71c;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #e0c50c;
+    }
+    hr {
+      margin: 40px 0;
+      border: 1px solid #f9d71c;
     }
     ul {
-      text-align: left;
-      max-width: 500px;
-      margin: auto;
+      list-style-type: none;
+      padding-left: 0;
+      color: #f9d71c;
+    }
+    li {
+      background-color: #222;
+      margin-bottom: 12px;
+      padding: 14px 18px;
+      border-radius: 8px;
+      box-shadow: 0 0 8px #f9d71c;
+      font-weight: 600;
     }
   </style>
 </head>
 <body>
-  <h1>Veri Giriş Formu</h1>
-  
-  <input type="date" id="tarih"><br>
-  <input type="number" id="sayi" placeholder="Sayı gir"><br>
-  <input type="text" id="aciklama" placeholder="Açıklama (isteğe bağlı)"><br>
-  <button onclick="kaydetVeri()">Kaydet</button>
 
-  <hr>
-  <h2>Bu Ayın Kayıtları</h2>
-  <ul id="liste"></ul>
+  <header>
+    <div class="logo">Sütlüzade</div>
+  </header>
+
+  <label for="tarih">Tarih</label>
+  <input type="date" id="tarih" />
+
+  <label for="sutlac">Sütlaç Sayısı</label>
+  <input type="number" id="sutlac" min="0" placeholder="Sütlaç sayısını giriniz" />
+
+  <label for="bos">Boş Sayısı</label>
+  <input type="number" id="bos" min="0" placeholder="Boş sayısını giriniz" />
+
+  <button onclick="kaydet()">Kaydet</button>
+
+  <hr />
+
+  <h2>Kaydedilen Veriler (Bu Ay)</h2>
+  <ul id="veriListesi"></ul>
 
   <script>
-    function kaydetVeri() {
-      const tarih = document.getElementById('tarih').value;
-      const sayi = document.getElementById('sayi').value;
-      const aciklama = document.getElementById('aciklama').value;
+    function getCurrentMonthKey() {
+      return new Date().toISOString().slice(0,7);
+    }
 
-      if (!tarih || !sayi) {
-        alert("Tarih ve sayı girilmelidir.");
+    function veriGetir() {
+      const key = getCurrentMonthKey();
+      const veriler = JSON.parse(localStorage.getItem(key)) || [];
+      return veriler;
+    }
+
+    function listeGuncelle() {
+      const veriler = veriGetir();
+      const liste = document.getElementById("veriListesi");
+      liste.innerHTML = "";
+
+      if(veriler.length === 0) {
+        liste.innerHTML = "<li>Henüz veri yok.</li>";
         return;
       }
 
-      const ay = tarih.slice(0, 7); // Örn: "2025-07"
-      const kayit = { tarih, sayi, aciklama };
-      
-      let veriler = JSON.parse(localStorage.getItem(ay)) || [];
-      veriler.push(kayit);
-      localStorage.setItem(ay, JSON.stringify(veriler));
-
-      document.getElementById('tarih').value = '';
-      document.getElementById('sayi').value = '';
-      document.getElementById('aciklama').value = '';
-
-      listeyiGoster();
-    }
-
-    function listeyiGoster() {
-      const liste = document.getElementById('liste');
-      liste.innerHTML = '';
-
-      const simdikiAy = new Date().toISOString().slice(0, 7); // Örn: 2025-07
-      const veriler = JSON.parse(localStorage.getItem(simdikiAy)) || [];
-
-      veriler.forEach(k => {
-        const li = document.createElement('li');
-        li.textContent = `${k.tarih} - ${k.sayi} (${k.aciklama})`;
+      veriler.forEach((v) => {
+        const li = document.createElement("li");
+        li.textContent = `${v.tarih} - Sütlaç: ${v.sutlac}, Boş: ${v.bos}`;
         liste.appendChild(li);
       });
     }
 
-    listeyiGoster();
+    function kaydet() {
+      const tarih = document.getElementById("tarih").value;
+      const sutlac = document.getElementById("sutlac").value;
+      const bos = document.getElementById("bos").value;
+
+      if(!tarih) {
+        alert("Lütfen tarih seçiniz.");
+        return;
+      }
+      if(sutlac === "" || sutlac < 0) {
+        alert("Lütfen geçerli bir sütlaç sayısı giriniz.");
+        return;
+      }
+      if(bos === "" || bos < 0) {
+        alert("Lütfen geçerli bir boş sayısı giriniz.");
+        return;
+      }
+
+      const key = getCurrentMonthKey();
+      const veriler = veriGetir();
+
+      veriler.push({
+        tarih,
+        sutlac: Number(sutlac),
+        bos: Number(bos)
+      });
+
+      localStorage.setItem(key, JSON.stringify(veriler));
+
+      document.getElementById("tarih").value = "";
+      document.getElementById("sutlac").value = "";
+      document.getElementById("bos").value = "";
+
+      listeGuncelle();
+    }
+
+    listeGuncelle();
   </script>
+
 </body>
 </html>
